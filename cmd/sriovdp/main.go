@@ -27,12 +27,15 @@ const (
 	defaultConfig = "/etc/pcidp/config.json"
 )
 
-// Parse Command line flags
+// flagInit parse command line flags
 func flagInit(cp *cliParams) {
 	flag.StringVar(&cp.configFile, "config-file", defaultConfig,
 		"JSON device pool config file location")
 	flag.StringVar(&cp.resourcePrefix, "resource-prefix", "intel.com",
-		"resource name prefix used for K8s extended resource")
+		"resource name prefix used for K8s extended re"+
+			"source")
+	flag.BoolVar(&cp.useCdi, "use-cdi", false,
+		"Use Container Device Interface to expose devices in containers")
 }
 
 func main() {
@@ -43,7 +46,7 @@ func main() {
 
 	glog.Infof("resource manager reading configs")
 	if err := rm.readConfig(); err != nil {
-		glog.Errorf("error getting resources from file %v", err)
+		glog.Error("error getting resources from file", err)
 		return
 	}
 

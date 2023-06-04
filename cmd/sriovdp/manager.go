@@ -31,11 +31,14 @@ const (
 	socketSuffix = "sock"
 )
 
+// cliParams presents CLI parameters for SR-IOV Network Device Plugin
 type cliParams struct {
 	configFile     string
 	resourcePrefix string
+	useCdi         bool
 }
 
+// resourceManager manages resources for SR-IOV Network Device Plugin binaries
 type resourceManager struct {
 	cliParams
 	pluginWatchMode bool
@@ -45,6 +48,7 @@ type resourceManager struct {
 	deviceProviders map[types.DeviceType]types.DeviceProvider
 }
 
+// newResourceManager initiates a new instance of resourceManager
 func newResourceManager(cp *cliParams) *resourceManager {
 	pluginWatchMode := utils.DetectPluginWatchMode(types.SockDir)
 	if pluginWatchMode {
@@ -53,7 +57,7 @@ func newResourceManager(cp *cliParams) *resourceManager {
 		glog.Infof("Using Deprecated Device Plugin Registry Path")
 	}
 
-	rf := factory.NewResourceFactory(cp.resourcePrefix, socketSuffix, pluginWatchMode)
+	rf := factory.NewResourceFactory(cp.resourcePrefix, socketSuffix, pluginWatchMode, cp.useCdi)
 	dp := make(map[types.DeviceType]types.DeviceProvider)
 	for k := range types.SupportedDevices {
 		dp[k] = rf.GetDeviceProvider(k)
@@ -106,7 +110,6 @@ func (rm *resourceManager) initServers() error {
 	deviceAllocated := make(map[string]bool)
 	for _, rc := range rm.configList {
 		// Create new ResourcePool
-		glog.Infof("")
 		glog.Infof("Creating new ResourcePool: %s", rc.ResourceName)
 		glog.Infof("DeviceType: %+v", rc.DeviceType)
 		dp, ok := rm.deviceProviders[rc.DeviceType]
